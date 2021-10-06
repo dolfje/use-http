@@ -215,8 +215,8 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
     del,
     delete: del,
     abort: () => controller.current && controller.current.abort(),
-    query: (query: any, variables: any) => post({ query, variables }),
-    mutate: (mutation: any, variables: any) => post({ mutation, variables }),
+    query: (query: any, variables: any, options?: RequestInit) => post({ query, variables, options }),
+    mutate: (mutation: any, variables: any, options?: RequestInit) => post({ mutation, variables, options }),
     cache
   }, {
     loading: { get: () => loading.current },

@@ -106,6 +106,7 @@ export type NoArgs = () => Promise<any>
 export type FetchData = (
   routeOrBody?: string | BodyInit | object,
   body?: BodyInit | object,
+  options?: RequestInit
 ) => Promise<any>
 
 export type RequestInitJSON = RequestInit & {
@@ -121,8 +122,8 @@ export interface ReqMethods {
   put: FetchData
   del: FetchData
   delete: FetchData
-  query: (query: string, variables?: BodyInit | object) => Promise<any>
-  mutate: (mutation: string, variables?: BodyInit | object) => Promise<any>
+  query: (query: string, variables?: BodyInit | object, options?: RequestInit) => Promise<any>
+  mutate: (mutation: string, variables?: BodyInit | object, options?: RequestInit) => Promise<any>
   abort: () => void
 }
 
