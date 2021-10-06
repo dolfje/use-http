@@ -73,7 +73,7 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
       const theController = controller.current
 
       const { url, options, response } = await doFetchArgs<TData>(
-        overrideRequestInit ?? requestInit,
+        {...requestInit, ...overrideRequestInit},
         method,
         theController,
         cacheLife,
