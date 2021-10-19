@@ -301,8 +301,8 @@ function useFetch() {
         del: del,
         delete: del,
         abort: function () { return controller.current && controller.current.abort(); },
-        query: function (query, variables, options) { return post({ query: query, variables: variables }, undefined, options); },
-        mutate: function (mutation, variables, options) { return post({ mutation: mutation, variables: variables }, undefined, options); },
+        query: function (query, variables, options) { return post({ query: query, variables: variables, options: options }); },
+        mutate: function (mutation, variables, options) { return post({ mutation: mutation, variables: variables, options: options }); },
         cache: cache
     }, {
         loading: { get: function () { return loading.current; } },
