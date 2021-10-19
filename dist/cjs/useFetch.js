@@ -104,7 +104,7 @@ function useFetch() {
                         controller.current = new AbortController();
                         controller.current.signal.onabort = onAbort;
                         theController = controller.current;
-                        return [4 /*yield*/, doFetchArgs_1.default(__assign(__assign({}, requestInit), overrideRequestInit), method, theController, cacheLife, cache, host, path, routeOrBody, body, interceptors.request)];
+                        return [4 /*yield*/, doFetchArgs_1.default(overrideRequestInit !== null && overrideRequestInit !== void 0 ? overrideRequestInit : requestInit, method, theController, cacheLife, cache, host, path, routeOrBody, body, interceptors.request)];
                     case 1:
                         _a = _h.sent(), url = _a.url, options = _a.options, response = _a.response;
                         error.current = undefined;
