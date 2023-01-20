@@ -1,11 +1,35 @@
 [![use-http logo][3]][5]
 
-<br/>
-
 <p align="center">
     <h1 align="center">useFetch</h1>
 </p>
 
+<br/>
+
+Changes with upstream
+---------
+[bug 302](https://github.com/ava/use-http/issues/302):  Fetching too quickly causes race conditions 
+
+[feature xxx]: Make it possible to adapt RequestInit information by doing request.post(route, body, overrideRequestInit)
+
+How to use
+----------
+At the moment we don't provide a package yet. As we hope that upstream become active again. But you can use the latest build by changing your package.json like:
+```json
+{
+    "dependencies": {
+        "use-http": "github:dolfje/use-http#build"
+    }
+}
+```
+
+<br/>
+<br/>
+<br/>
+<br />
+
+Upstream README.md
+--------
 <br />
 
 <p align="center">
