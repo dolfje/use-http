@@ -89,8 +89,9 @@ function useFetch() {
     var _b = useRefState(defaults.loading), loading = _b[0], setLoading = _b[1];
     var forceUpdate = useReducer(function () { return ({}); }, [])[1];
     var makeFetch = useDeepCallback(function (method) {
-        var doFetch = function (routeOrBody, body) { return __awaiter(_this, void 0, void 0, function () {
-            var theController, _a, url, options, response, timer, newData, newRes, _b, _c, opts, shouldRetry, _d, _e, theData, err_1, opts, shouldRetry, _f, _g, theData;
+        var doFetch = function (routeOrBody, body, overrideRequestInit) { return __awaiter(_this, void 0, void 0, function () {
+            var theController, _a, url, options, response, timer, newData, newRes, _b, opts, shouldRetry, _c, _d, theData, err_1, opts, shouldRetry, _e, _f, theData;
+            var _g;
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
@@ -99,7 +100,7 @@ function useFetch() {
                         controller.current = new AbortController();
                         controller.current.signal.onabort = onAbort;
                         theController = controller.current;
-                        return [4 /*yield*/, doFetchArgs(requestInit, method, theController, cacheLife, cache, host, path, routeOrBody, body, interceptors.request)];
+                        return [4 /*yield*/, doFetchArgs(__assign(__assign({}, requestInit), overrideRequestInit), method, theController, cacheLife, cache, host, path, routeOrBody, body, interceptors.request)];
                     case 1:
                         _a = _h.sent(), url = _a.url, options = _a.options, response = _a.response;
                         error.current = undefined;
@@ -118,52 +119,56 @@ function useFetch() {
                     case 2:
                         _h.trys.push([2, 17, 23, 24]);
                         if (!(response.isCached && cachePolicy === CACHE_FIRST)) return [3 /*break*/, 3];
-                        newRes = response.cached;
+                        newRes = (_g = response.cached) === null || _g === void 0 ? void 0 : _g.clone();
                         return [3 /*break*/, 5];
                     case 3: return [4 /*yield*/, fetch(url, options)];
                     case 4:
                         newRes = (_h.sent()).clone();
                         _h.label = 5;
                     case 5:
-                        res.current = newRes.clone();
+                        if (theController == controller.current) {
+                            res.current = newRes.clone();
+                        }
                         return [4 /*yield*/, tryGetData(newRes, defaults.data, responseType)];
                     case 6:
                         newData = _h.sent();
-                        res.current.data = onNewData(data.current, newData);
-                        _b = res;
+                        newRes.data = onNewData(data.current, newData);
                         if (!interceptors.response) return [3 /*break*/, 8];
-                        return [4 /*yield*/, interceptors.response({ response: res.current, request: requestInit })];
+                        return [4 /*yield*/, interceptors.response({ response: newRes, request: requestInit })];
                     case 7:
-                        _c = _h.sent();
+                        _b = _h.sent();
                         return [3 /*break*/, 9];
                     case 8:
-                        _c = res.current;
+                        _b = newRes;
                         _h.label = 9;
                     case 9:
-                        _b.current = _c;
-                        invariant('data' in res.current, 'You must have `data` field on the Response returned from your `interceptors.response`');
-                        data.current = res.current.data;
+                        newRes = _b;
+                        invariant('data' in newRes, 'You must have `data` field on the Response returned from your `interceptors.response`');
+                        if (theController == controller.current) {
+                            res.current = newRes;
+                            data.current = res.current.data;
+                        }
                         opts = { attempt: attempt.current, response: newRes };
                         // if we just have `retries` set with NO `retryOn` then
                         // automatically retry on fail until attempts run out
-                        _d = !isFunction(retryOn) && Array.isArray(retryOn) && retryOn.length < 1 && (newRes === null || newRes === void 0 ? void 0 : newRes.ok) === false
+                        _c = !isFunction(retryOn) && Array.isArray(retryOn) && retryOn.length < 1 && (newRes === null || newRes === void 0 ? void 0 : newRes.ok) === false
                             // otherwise only retry when is specified
                             || Array.isArray(retryOn) && retryOn.includes(newRes.status);
-                        if (_d) 
+                        if (_c) 
                         // if we just have `retries` set with NO `retryOn` then
                         // automatically retry on fail until attempts run out
                         return [3 /*break*/, 12];
-                        _e = isFunction(retryOn);
-                        if (!_e) return [3 /*break*/, 11];
+                        _d = isFunction(retryOn);
+                        if (!_d) return [3 /*break*/, 11];
                         return [4 /*yield*/, retryOn(opts)];
                     case 10:
-                        _e = (_h.sent());
+                        _d = (_h.sent());
                         _h.label = 11;
                     case 11:
-                        _d = _e;
+                        _c = _d;
                         _h.label = 12;
                     case 12:
-                        shouldRetry = (_d) && retries > 0 && retries > attempt.current;
+                        shouldRetry = (_c) && retries > 0 && retries > attempt.current;
                         if (!shouldRetry) return [3 /*break*/, 14];
                         return [4 /*yield*/, retry(opts, routeOrBody, body)];
                     case 13:
@@ -181,53 +186,58 @@ function useFetch() {
                         return [3 /*break*/, 24];
                     case 17:
                         err_1 = _h.sent();
-                        if (attempt.current >= retries && timedout.current)
+                        if (attempt.current >= retries && timedout.current && theController == controller.current)
                             error.current = makeError('AbortError', 'Timeout Error');
                         opts = { attempt: attempt.current, error: err_1 };
                         // if we just have `retries` set with NO `retryOn` then
                         // automatically retry on fail until attempts run out
-                        _f = !isFunction(retryOn) && Array.isArray(retryOn) && retryOn.length < 1;
-                        if (_f) 
+                        _e = !isFunction(retryOn) && Array.isArray(retryOn) && retryOn.length < 1;
+                        if (_e) 
                         // if we just have `retries` set with NO `retryOn` then
                         // automatically retry on fail until attempts run out
                         return [3 /*break*/, 20];
-                        _g = isFunction(retryOn);
-                        if (!_g) return [3 /*break*/, 19];
+                        _f = isFunction(retryOn);
+                        if (!_f) return [3 /*break*/, 19];
                         return [4 /*yield*/, retryOn(opts)];
                     case 18:
-                        _g = (_h.sent());
+                        _f = (_h.sent());
                         _h.label = 19;
                     case 19:
-                        _f = _g;
+                        _e = _f;
                         _h.label = 20;
                     case 20:
-                        shouldRetry = (_f) && retries > 0 && retries > attempt.current;
+                        shouldRetry = (_e) && retries > 0 && retries > attempt.current;
                         if (!shouldRetry) return [3 /*break*/, 22];
                         return [4 /*yield*/, retry(opts, routeOrBody, body)];
                     case 21:
                         theData = _h.sent();
                         return [2 /*return*/, theData];
                     case 22:
-                        if (err_1.name !== 'AbortError') {
+                        if (err_1.name !== 'AbortError' && theController == controller.current) {
                             error.current = err_1;
                         }
                         return [3 /*break*/, 24];
                     case 23:
-                        timedout.current = false;
                         if (timer)
                             clearTimeout(timer);
-                        controller.current = undefined;
                         return [7 /*endfinally*/];
                     case 24:
-                        if (newRes && !newRes.ok && !error.current)
-                            error.current = makeError(newRes.status, newRes.statusText);
-                        if (!suspense)
-                            setLoading(false);
-                        if (attempt.current === retries)
-                            attempt.current = 0;
-                        if (error.current)
-                            onError({ error: error.current });
-                        return [2 /*return*/, data.current];
+                        if (theController == controller.current) {
+                            if (newRes && !newRes.ok && !error.current)
+                                error.current = makeError(newRes.status, newRes.statusText);
+                            if (!suspense)
+                                setLoading(false);
+                            if (attempt.current === retries)
+                                attempt.current = 0;
+                            if (error.current)
+                                onError({ error: error.current });
+                            timedout.current = false;
+                            controller.current = undefined;
+                        }
+                        if (newRes) {
+                            return [2 /*return*/, newRes.data];
+                        }
+                        return [2 /*return*/, undefined];
                 }
             });
         }); }; // end of doFetch()
@@ -296,8 +306,8 @@ function useFetch() {
         del: del,
         delete: del,
         abort: function () { return controller.current && controller.current.abort(); },
-        query: function (query, variables) { return post({ query: query, variables: variables }); },
-        mutate: function (mutation, variables) { return post({ mutation: mutation, variables: variables }); },
+        query: function (query, variables, options) { return post({ query: query, variables: variables }, undefined, options); },
+        mutate: function (mutation, variables, options) { return post({ mutation: mutation, variables: variables }, undefined, options); },
         cache: cache
     }, {
         loading: { get: function () { return loading.current; } },

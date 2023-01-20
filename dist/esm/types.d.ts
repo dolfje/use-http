@@ -92,7 +92,7 @@ export declare type RetryOpts = {
     response?: Response;
 };
 export declare type NoArgs = () => Promise<any>;
-export declare type FetchData<TData> = (routeOrBody?: string | BodyInit | object, body?: BodyInit | object) => Promise<TData>;
+export declare type FetchData<TData> = (routeOrBody?: string | BodyInit | object, body?: BodyInit | object, options?: RequestInit) => Promise<TData>;
 export declare type RequestInitJSON = RequestInit & {
     headers: {
         'Content-Type': string;
@@ -105,8 +105,8 @@ export interface ReqMethods<TData> {
     put: FetchData<TData>;
     del: FetchData<TData>;
     delete: FetchData<TData>;
-    query: (query: string, variables?: BodyInit | object) => Promise<TData>;
-    mutate: (mutation: string, variables?: BodyInit | object) => Promise<TData>;
+    query: (query: string, variables?: BodyInit | object, options?: RequestInit) => Promise<TData>;
+    mutate: (mutation: string, variables?: BodyInit | object, options?: RequestInit) => Promise<TData>;
     abort: () => void;
 }
 export interface Data<TData> {
