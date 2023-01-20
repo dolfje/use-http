@@ -174,8 +174,10 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
         timedout.current = false
         controller.current = undefined
       }
-
-      return data.current
+      if(newRes) {
+        return newRes.data
+      }
+      return undefined;
     } // end of doFetch()
 
     const retry = async (opts: RetryOpts, routeOrBody?: RouteOrBody, body?: UFBody) => {
