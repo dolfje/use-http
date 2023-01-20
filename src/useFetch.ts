@@ -66,14 +66,14 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
 
   const makeFetch = useDeepCallback((method: HTTPMethod): FetchData<TData> => {
 
-    const doFetch = async (routeOrBody?: RouteOrBody, body?: UFBody): Promise<any> => {
+    const doFetch = async (routeOrBody?: RouteOrBody, body?: UFBody, overrideRequestInit?: RequestInit): Promise<any> => {
       if (isServer) return // for now, we don't do anything on the server
       controller.current = new AbortController()
       controller.current.signal.onabort = onAbort
       const theController = controller.current
 
       const { url, options, response } = await doFetchArgs<TData>(
-        requestInit,
+        {...requestInit, ...overrideRequestInit},
         method,
         theController,
         cacheLife,
@@ -215,8 +215,8 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
     del,
     delete: del,
     abort: () => controller.current && controller.current.abort(),
-    query: (query: any, variables: any) => post({ query, variables }),
-    mutate: (mutation: any, variables: any) => post({ mutation, variables }),
+    query: (query: any, variables: any, options?: RequestInit) => post({ query, variables }, undefined, options),
+    mutate: (mutation: any, variables: any, options?: RequestInit) => post({ mutation, variables }, undefined, options),
     cache
   }, {
     loading: { get: () => loading.current },
