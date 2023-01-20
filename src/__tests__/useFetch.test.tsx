@@ -1365,3 +1365,32 @@ describe('useFetch - racing conditions', (): void => {
     expect(result.current.data).toBe("second");
   })
 })
+
+describe('useFetch - racing conditions2', (): void => {
+  afterEach((): void => {
+    cleanup()
+    fetch.resetMocks()
+  })
+
+  it('check for multiple simultanious requests', async (): Promise<void> => {
+    cleanup()
+    fetch.resetMocks()
+    
+    fetch.mockResponse(async (req) => req.url)
+    const {result} = renderHook(
+      () => useFetch('a-fake-url'),
+      {initialProps: {}}
+    )
+
+    await act(async () => {
+      const first = result.current.get("1");
+      const second = result.current.get("2");
+  
+      const response1 = await first;
+      const response2 = await second;
+  
+      expect(response1).toBe("/a-fake-url/1")
+      expect(response2).toBe("/a-fake-url/2")  
+    })
+  })
+})
