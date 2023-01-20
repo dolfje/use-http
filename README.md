@@ -9,6 +9,8 @@
 Changes with upstream
 ---------
 [bug 302](https://github.com/ava/use-http/issues/302):  Fetching too quickly causes race conditions 
+[bug 369](https://github.com/ava/use-http/issues/369): make sure package installs with react 18 (not checked if strictmode is supported)
+[bug xxx]: multiple simultanious calls to request.get() returns the same data for each request
 
 [feature xxx]: Make it possible to adapt RequestInit information by doing request.post(route, body, overrideRequestInit)
 
