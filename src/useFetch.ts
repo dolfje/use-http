@@ -66,14 +66,14 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
 
   const makeFetch = useDeepCallback((method: HTTPMethod): FetchData<TData> => {
 
-    const doFetch = async (routeOrBody?: RouteOrBody, body?: UFBody): Promise<any> => {
+    const doFetch = async (routeOrBody?: RouteOrBody, body?: UFBody, overrideRequestInit?: RequestInit): Promise<any> => {
       if (isServer) return // for now, we don't do anything on the server
       controller.current = new AbortController()
       controller.current.signal.onabort = onAbort
       const theController = controller.current
 
       const { url, options, response } = await doFetchArgs<TData>(
-        requestInit,
+        {...requestInit, ...overrideRequestInit},
         method,
         theController,
         cacheLife,
@@ -103,18 +103,24 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
 
       try {
         if (response.isCached && cachePolicy === CACHE_FIRST) {
-          newRes = response.cached as Response
+          newRes = response.cached?.clone() as Res<TData>
         } else {
-          newRes = (await fetch(url, options)).clone()
+          newRes = (await fetch(url, options)).clone() as Res<TData>
         }
-        res.current = newRes.clone()
+
+        if(theController == controller.current) {
+          res.current = newRes.clone()
+        }
 
         newData = await tryGetData(newRes, defaults.data, responseType)
-        res.current.data = onNewData(data.current, newData)
+        newRes.data = onNewData(data.current, newData)
 
-        res.current = interceptors.response ? await interceptors.response({ response: res.current, request: requestInit }) : res.current
-        invariant('data' in res.current, 'You must have `data` field on the Response returned from your `interceptors.response`')
-        data.current = res.current.data as TData
+        newRes = interceptors.response ? await interceptors.response({ response: newRes, request: requestInit }) : newRes
+        invariant('data' in newRes, 'You must have `data` field on the Response returned from your `interceptors.response`')
+        if(theController == controller.current) {
+          res.current = newRes
+          data.current = res.current.data as TData
+        }
 
         const opts = { attempt: attempt.current, response: newRes }
         const shouldRetry = (
@@ -137,7 +143,7 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
 
         if (Array.isArray(data.current) && !!(data.current.length % perPage)) hasMore.current = false
       } catch (err) {
-        if (attempt.current >= retries && timedout.current) error.current = makeError('AbortError', 'Timeout Error')
+        if (attempt.current >= retries && timedout.current && theController == controller.current) error.current = makeError('AbortError', 'Timeout Error')
         const opts = { attempt: attempt.current, error: err }
         const shouldRetry = (
           // if we just have `retries` set with NO `retryOn` then
@@ -151,22 +157,27 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
           const theData = await retry(opts, routeOrBody, body)
           return theData
         }
-        if (err.name !== 'AbortError') {
+        if (err.name !== 'AbortError' && theController == controller.current) {
           error.current = err
         }
 
       } finally {
-        timedout.current = false
         if (timer) clearTimeout(timer)
-        controller.current = undefined
       }
 
-      if (newRes && !newRes.ok && !error.current) error.current = makeError(newRes.status, newRes.statusText)
-      if (!suspense) setLoading(false)
-      if (attempt.current === retries) attempt.current = 0
-      if (error.current) onError({ error: error.current })
+      if(theController == controller.current) {
+        if (newRes && !newRes.ok && !error.current) error.current = makeError(newRes.status, newRes.statusText)
+        if (!suspense) setLoading(false)
+        if (attempt.current === retries) attempt.current = 0
+        if (error.current) onError({ error: error.current })
 
-      return data.current
+        timedout.current = false
+        controller.current = undefined
+      }
+      if(newRes) {
+        return newRes.data
+      }
+      return undefined;
     } // end of doFetch()
 
     const retry = async (opts: RetryOpts, routeOrBody?: RouteOrBody, body?: UFBody) => {
@@ -215,8 +226,8 @@ function useFetch<TData = any>(...args: UseFetchArgs): UseFetch<TData> {
     del,
     delete: del,
     abort: () => controller.current && controller.current.abort(),
-    query: (query: any, variables: any) => post({ query, variables }),
-    mutate: (mutation: any, variables: any) => post({ mutation, variables }),
+    query: (query: any, variables: any, options?: RequestInit) => post({ query, variables }, undefined, options),
+    mutate: (mutation: any, variables: any, options?: RequestInit) => post({ mutation, variables }, undefined, options),
     cache
   }, {
     loading: { get: () => loading.current },
